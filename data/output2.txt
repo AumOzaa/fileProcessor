@@ -1,0 +1,5 @@
+Mark my words,
+This is not a really good
+project to learn
+channels and routines
+in golang!

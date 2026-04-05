@@ -1,74 +1,40 @@
 package main
 
 import (
-	"bufio"
-	"fmt"
-	"go/scanner"
-	"log"
-	"os"
+	// "fmt"
+	"sync"
+
+	"github.com/AumOzaa/fileProcessor/functions"
 )
 
 func main() {
 	// Listing files
-	fmt.Println("--------- Exisiting Files ---------")
-	listFiles()
-	fmt.Println("-------------------------------")
+	// fmt.Println("--------- Exisiting Files ---------")
+	// functions.ListFiles()
+	// fmt.Println("--------- Writing the file ---------")
+	// functions.WritingAFile()
+	// fmt.Println("--------- Reading lines from a file ---------")
+	// numberOfLines, _ := functions.CountingLines("./data/output1.txt")
+	// fmt.Println("Number of line(s) are ", numberOfLines)
 
-	fmt.Println("--------- Writing the file ---------")
-	writingAFile()
-	fmt.Println("-------------------------------")
-}
+	listOfFiles := []string{"./data/output1.txt", "./data/output2.txt", "./data/output3.txt"}
 
-func listFiles() {
-	files, err := os.ReadDir(".")
-	if err != nil {
-		log.Fatal(err)
+	workerCount := 2
+	chann := make(chan string)
+
+	var wg sync.WaitGroup
+
+	for i := 0; i < workerCount; i++ {
+		wg.Add(1) // 2. Tell the counter "We are waiting for 1 more worker"
+		go func() {
+			defer wg.Done() // 3. Tell the counter "I'm finished" when the function ends
+			functions.CountingLinesViaChannel(chann)
+		}()
+	}
+	for _, v := range listOfFiles {
+		chann <- v
 	}
 
-	for _, file := range files {
-		fmt.Println(file.Name())
-	}
-}
-
-func MakeFIle() (*os.File, error) {
-	file, err := os.Create("./data/output1.txt") // Assuming the directory already exists
-	if err != nil {
-		log.Fatal("Error creating the file")
-	}
-
-	// defer file.Close() #TODO: Do not close now will close when it's work is over in some other function
-
-	return file, err
-}
-
-func writingAFile() {
-	file, _ := MakeFIle()
-
-	defer file.Close() // This'd close the file after the wiritingAfile func is completed
-
-	w := bufio.NewWriter(file)
-	fmt.Fprint(w, "Hello, ")
-	fmt.Fprint(w, "world! ")
-	w.Flush()
-
-	fmt.Println()
-}
-
-func countingLines(filePath string) (int, error) {
-	file, err := os.Open(filePath)
-
-	defer file.Close()
-
-	scanner := bufio.NewScanner(file)
-	lineCount := 0
-
-	for scanner.Scan() {
-		lineCount++
-	}
-
-	if err := scanner.Err(); err != nil {
-		return 0, err
-	}
-
-	return lineCount, err
+	close(chann)
+	wg.Wait()
 }
