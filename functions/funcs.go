@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"sync"
 )
 
 func ListFiles() {
@@ -57,8 +58,9 @@ func CountingLines(filePath string) (int, error) {
 	return lineCount, err
 }
 
-func CountingLinesViaChannel(filepathChannel chan string) {
+func CountingLinesViaChannel(filepathChannel chan string, Wg *sync.WaitGroup) {
 
+	defer Wg.Done()
 	for filePath := range filepathChannel { // runs until channel gives input
 		file, err := os.Open(filePath) // Opens up the file
 		if err != nil {
