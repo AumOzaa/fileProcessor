@@ -59,8 +59,8 @@ func CountingLines(filePath string) (int, error) {
 
 func CountingLinesViaChannel(filepathChannel chan string) {
 
-	for filePath := range filepathChannel {
-		file, err := os.Open(filePath)
+	for filePath := range filepathChannel { // runs until channel gives input
+		file, err := os.Open(filePath) // Opens up the file
 		if err != nil {
 			fmt.Println("Error : ", err)
 			continue
@@ -68,6 +68,7 @@ func CountingLinesViaChannel(filepathChannel chan string) {
 
 		defer file.Close()
 
+		// to count the lines
 		scanner := bufio.NewScanner(file)
 		lineCount := 0
 
